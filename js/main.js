@@ -1,11 +1,3 @@
-/**
- * ═══════════════════════════════════════════════════════════════
- * AUTODRONE v3.0 - MAIN APPLICATION
- * ═══════════════════════════════════════════════════════════════
- * Enhanced with sound, achievements, syntax highlighting,
- * particles, debug panel, templates, and themes.
- */
-
 import { Lexer, LexerError } from './lexer.js';
 import { Parser, ParseError } from './parser.js';
 import { CppLexer, CppLexerError } from './lexer_cpp.js';
@@ -24,19 +16,14 @@ import { ParticleSystem } from './particles.js';
 import { TemplateManager } from './templates.js';
 import { DebugPanel } from './debug.js';
 
-/**
- * Main Application Class
- */
 class AutoDroneApp {
     constructor() {
-        // Core components
         this.ui = null;
         this.renderer = null;
         this.vm = null;
         this.gameState = null;
         this.analysis = new AnalysisEngine();
 
-        // Enhancement modules
         this.sound = new SoundManager();
         this.achievements = new AchievementManager();
         this.syntax = new SyntaxHighlighter();
@@ -44,82 +31,57 @@ class AutoDroneApp {
         this.templates = null;
         this.debug = new DebugPanel();
 
-        // Current level
         this.currentLevel = 1;
         this.currentLevelData = null;
 
-        // Execution state
         this.isRunning = false;
         this.animationFrame = null;
         this.executionInterval = null;
 
-        // Debounce timer for parsing
         this.parseDebounce = null;
 
-        // Theme
         this.currentTheme = 'dark';
 
-        // Language mode: 'python' or 'cpp'
         this.languageMode = 'python';
     }
 
-    /**
-     * Initialize the application
-     */
     init() {
         console.log('🤖 AutoDrone v3.0 initializing...');
 
-        // Initialize UI
         this.ui = new UIController();
 
-        // Initialize renderer with particle system
         const canvas = document.getElementById('game-canvas');
         this.renderer = new Renderer(canvas, this.particles);
 
-        // Initialize syntax highlighting
         this.syntax.init('code-editor');
 
-        // Initialize templates
         this.templates = new TemplateManager(document.getElementById('code-editor'));
         this.templates.createDropdown('template-container');
 
-        // Initialize debug panel
         this.debug.create();
 
-        // Setup UI callbacks
         this.setupUICallbacks();
 
-        // Setup toolbar buttons
         this.setupToolbar();
 
-        // Setup achievement callbacks
         this.setupAchievements();
 
-        // Load first level
         this.loadLevel(1);
 
-        // Setup keyboard shortcuts
         this.setupKeyboardShortcuts();
 
-        // Start render loop
         this.startRenderLoop();
 
-        // Initial messages
         this.ui.log('🤖 Selamat datang di AutoDrone v3.0!', 'success');
         this.ui.log('✨ Fitur baru: Sound, Achievements, Syntax Highlighting!', 'info');
         this.ui.log('Tekan F5 atau klik Run untuk menjalankan script.', 'info');
 
-        // Update achievement count
         this.updateAchievementCount();
 
         console.log('✓ AutoDrone v3.0 ready!');
     }
 
-    /**
-     * Setup UI callbacks
-     */
     setupUICallbacks() {
-        // Code change handler
         this.ui.onCodeChange = () => {
             clearTimeout(this.parseDebounce);
             this.parseDebounce = setTimeout(() => {
@@ -128,7 +90,6 @@ class AutoDroneApp {
             }, 300);
         };
 
-        // Control buttons
         this.ui.btnRun.addEventListener('click', () => this.run());
         this.ui.btnPause.addEventListener('click', () => this.pause());
         this.ui.btnStep.addEventListener('click', () => this.step());
@@ -136,7 +97,6 @@ class AutoDroneApp {
         this.ui.btnReset.addEventListener('click', () => this.resetLevel());
         this.ui.btnRewind.addEventListener('click', () => this.rewind());
 
-        // Next level button
         document.getElementById('btn-next-level').addEventListener('click', () => {
             this.sound.playClick();
             this.ui.hideOverlay();
@@ -145,10 +105,8 @@ class AutoDroneApp {
             }
         });
 
-        // Level buttons (event delegation)
         this.setupLevelButtons();
 
-        // Hint button - track for achievement
         if (this.ui.btnHint) {
             const originalClick = this.ui.btnHint.onclick;
             this.ui.btnHint.addEventListener('click', () => {
@@ -157,9 +115,6 @@ class AutoDroneApp {
         }
     }
 
-    /**
-     * Setup level button click handlers
-     */
     setupLevelButtons() {
         const levelSelector = document.getElementById('level-selector');
         if (levelSelector) {
@@ -174,18 +129,13 @@ class AutoDroneApp {
         }
     }
 
-    /**
-     * Setup toolbar buttons
-     */
     setupToolbar() {
-        // Debug toggle
         document.getElementById('btn-debug')?.addEventListener('click', () => {
             this.sound.playClick();
             const enabled = this.debug.toggle();
             document.getElementById('btn-debug').classList.toggle('active', enabled);
         });
 
-        // Sound toggle
         document.getElementById('btn-sound')?.addEventListener('click', () => {
             const enabled = this.sound.toggle();
             const btn = document.getElementById('btn-sound');
@@ -195,7 +145,6 @@ class AutoDroneApp {
             if (enabled) this.sound.playClick();
         });
 
-        // Particles toggle
         document.getElementById('btn-particles')?.addEventListener('click', () => {
             this.sound.playClick();
             const enabled = this.particles.toggle();
@@ -204,40 +153,32 @@ class AutoDroneApp {
             btn.classList.toggle('off', !enabled);
         });
 
-        // Theme toggle
         document.getElementById('btn-theme')?.addEventListener('click', () => {
             this.sound.playClick();
             this.toggleTheme();
         });
 
-        // Achievements button
         document.getElementById('btn-achievements')?.addEventListener('click', () => {
             this.sound.playClick();
             this.showAchievementsModal();
         });
 
-        // Achievement modal close
         document.getElementById('achievement-modal-close')?.addEventListener('click', () => {
             document.getElementById('achievement-modal').classList.add('hidden');
         });
 
-        // Close modal on backdrop click
         document.getElementById('achievement-modal')?.addEventListener('click', (e) => {
             if (e.target.id === 'achievement-modal') {
                 document.getElementById('achievement-modal').classList.add('hidden');
             }
         });
 
-        // Language mode toggle
         document.getElementById('btn-language')?.addEventListener('click', () => {
             this.sound.playClick();
             this.toggleLanguageMode();
         });
     }
 
-    /**
-     * Toggle language mode between Python and C++
-     */
     toggleLanguageMode() {
         this.languageMode = this.languageMode === 'python' ? 'cpp' : 'python';
 
@@ -247,22 +188,17 @@ class AutoDroneApp {
             btn.title = this.languageMode === 'python' ? 'Python Mode' : 'C++ Mode';
         }
 
-        // Update syntax highlighter mode
         this.syntax.setMode(this.languageMode);
 
-        // Update templates
         if (this.templates) {
             this.templates.setMode(this.languageMode);
         }
 
-        // Re-highlight
         this.syntax.highlight();
 
-        // Show notification
         const modeName = this.languageMode === 'python' ? 'Python' : 'C++';
         this.ui.log(`🔄 Switched to ${modeName} syntax mode`, 'info');
 
-        // Show example
         if (this.languageMode === 'cpp') {
             this.ui.log('💡 Contoh: move_forward(); turn_left(); for (int i = 0; i < 3; i++) { }', 'info');
         } else {
@@ -270,15 +206,10 @@ class AutoDroneApp {
         }
     }
 
-    /**
-     * Setup achievements
-     */
     setupAchievements() {
         this.achievements.onAchievementUnlock = (achievement) => {
-            // Play sound
             this.sound.playAchievement();
 
-            // Show badge
             const badge = document.getElementById('achievement-badge');
             const icon = document.getElementById('achievement-icon');
             const name = document.getElementById('achievement-name');
@@ -288,26 +219,19 @@ class AutoDroneApp {
                 name.textContent = achievement.name;
                 badge.classList.remove('hidden');
 
-                // Emit particles at badge location
                 this.particles.emitAchievement(window.innerWidth / 2, 80);
 
-                // Hide after 3 seconds
                 setTimeout(() => {
                     badge.classList.add('hidden');
                 }, 3000);
             }
 
-            // Log
             this.ui.logSuccess(`🏆 Achievement Unlocked: ${achievement.name}!`);
 
-            // Update count
             this.updateAchievementCount();
         };
     }
 
-    /**
-     * Update achievement count display
-     */
     updateAchievementCount() {
         const countEl = document.getElementById('achievement-count');
         if (countEl) {
@@ -315,16 +239,12 @@ class AutoDroneApp {
         }
     }
 
-    /**
-     * Show achievements modal
-     */
     showAchievementsModal() {
         const modal = document.getElementById('achievement-modal');
         const list = document.getElementById('achievement-list');
 
         if (!modal || !list) return;
 
-        // Generate achievement list
         const achievements = this.achievements.getAllAchievements();
         list.innerHTML = achievements.map(a => `
             <div class="achievement-item ${a.unlocked ? 'unlocked' : 'locked'}">
@@ -339,9 +259,6 @@ class AutoDroneApp {
         modal.classList.remove('hidden');
     }
 
-    /**
-     * Toggle theme
-     */
     toggleTheme() {
         this.currentTheme = this.currentTheme === 'dark' ? 'light' : 'dark';
         document.body.dataset.theme = this.currentTheme;
@@ -354,9 +271,6 @@ class AutoDroneApp {
         this.ui.log(`🎨 Theme switched to ${this.currentTheme}`, 'info');
     }
 
-    /**
-     * Setup keyboard shortcuts
-     */
     setupKeyboardShortcuts() {
         document.addEventListener('keydown', (e) => {
             if (document.activeElement === this.ui.codeEditor && !e.ctrlKey) {
@@ -383,14 +297,10 @@ class AutoDroneApp {
             }
         });
 
-        // Initialize sound on first interaction
         document.addEventListener('click', () => this.sound.init(), { once: true });
         document.addEventListener('keydown', () => this.sound.init(), { once: true });
     }
 
-    /**
-     * Load a level
-     */
     loadLevel(levelNum) {
         this.stop();
 
@@ -402,19 +312,14 @@ class AutoDroneApp {
             return;
         }
 
-        // Initialize game state
         this.gameState = new GameState(this.currentLevelData);
 
-        // Initialize renderer
         this.renderer.initCanvas(this.currentLevelData.width, this.currentLevelData.height);
 
-        // Clear particles
         this.particles.clear();
 
-        // Reset debug panel
         this.debug.reset();
 
-        // Update UI
         this.ui.setActiveLevel(levelNum);
         this.ui.updateStats(this.gameState);
         this.ui.updateLessonBanner(this.currentLevelData, levelNum);
@@ -424,7 +329,6 @@ class AutoDroneApp {
         this.ui.updateVMState('READY');
         this.ui.clearHighlight();
 
-        // Log level info
         this.ui.log(`═══ ${this.currentLevelData.name} ═══`, 'info');
         this.ui.log(this.currentLevelData.description, 'info');
 
@@ -432,16 +336,12 @@ class AutoDroneApp {
             this.ui.log(`📚 Konsep: ${this.currentLevelData.lesson}`, 'info');
         }
 
-        // Clear editor
         this.ui.setCode('');
         this.syntax.highlight();
 
         console.log(`Loaded level ${levelNum}: ${this.currentLevelData.name}`);
     }
 
-    /**
-     * Reset current level
-     */
     resetLevel() {
         this.stop();
         this.gameState.reset(this.currentLevelData);
@@ -454,13 +354,9 @@ class AutoDroneApp {
         this.ui.clearHighlight();
         this.ui.log('🔄 Level reset.', 'info');
 
-        // Track retry for achievement
         this.achievements.recordRetry();
     }
 
-    /**
-     * Parse code
-     */
     parseCode() {
         const code = this.ui.getCode();
 
@@ -473,14 +369,12 @@ class AutoDroneApp {
             let tokens, result;
 
             if (this.languageMode === 'cpp') {
-                // C++ mode
                 const lexer = new CppLexer(code);
                 tokens = lexer.tokenize();
 
                 const parser = new CppParser(tokens);
                 result = parser.parse();
             } else {
-                // Python mode (default)
                 const lexer = new Lexer(code);
                 tokens = lexer.tokenize();
 
@@ -508,9 +402,6 @@ class AutoDroneApp {
         }
     }
 
-    /**
-     * Compile code
-     */
     compileCode() {
         const ast = this.parseCode();
         if (!ast) return null;
@@ -524,14 +415,9 @@ class AutoDroneApp {
         }
     }
 
-    /**
-     * Run script
-     */
     run() {
-        // Initialize sound
         this.sound.init();
 
-        // Resume if paused
         if (this.vm && this.vm.state === VMState.PAUSED) {
             this.vm.run();
             this.isRunning = true;
@@ -541,7 +427,6 @@ class AutoDroneApp {
             return;
         }
 
-        // Reset and compile
         this.resetLevel();
 
         const bytecode = this.compileCode();
@@ -551,17 +436,14 @@ class AutoDroneApp {
             return;
         }
 
-        // Track code lines for achievement
         const lines = this.ui.getCode().split('\n').length;
         this.achievements.recordCodeWritten(lines);
 
-        // Create VM
         this.vm = new VirtualMachine(bytecode, this.gameState, {
             maxInstructions: 10000,
             maxLoopIterations: 1000
         });
 
-        // Setup VM events
         this.vm.on(EventType.LOG, (event) => {
             this.ui.log(String(event.data.message), 'info');
         });
@@ -581,7 +463,6 @@ class AutoDroneApp {
             }
         });
 
-        // Start
         this.vm.run();
         this.isRunning = true;
         this.ui.setControlState('running');
@@ -590,9 +471,6 @@ class AutoDroneApp {
         this.startExecution();
     }
 
-    /**
-     * Start execution loop
-     */
     startExecution() {
         if (this.executionInterval) {
             clearInterval(this.executionInterval);
@@ -606,9 +484,6 @@ class AutoDroneApp {
         }, interval);
     }
 
-    /**
-     * Execute tick
-     */
     executeTick() {
         if (!this.vm || this.vm.state !== VMState.RUNNING) {
             this.stopExecution();
@@ -622,19 +497,15 @@ class AutoDroneApp {
                 this.processAction(action);
             }
 
-            // Update debug
             this.debug.update(this.gameState);
 
-            // Highlight line
             const line = this.vm.getCurrentLine();
             if (line > 0) {
                 this.ui.highlightLine(line);
             }
 
-            // Update stats
             this.ui.updateStats(this.gameState);
 
-            // Check game status
             if (this.gameState.status !== 'playing') {
                 this.vm.stop();
             }
@@ -647,15 +518,11 @@ class AutoDroneApp {
         }
     }
 
-    /**
-     * Process action
-     */
     processAction(action) {
         let result;
         const droneX = this.gameState.drone.x;
         const droneY = this.gameState.drone.y;
 
-        // Calculate canvas position for particles
         const tileSize = this.renderer.tileSize;
         const canvasX = droneX * tileSize + tileSize / 2;
         const canvasY = droneY * tileSize + tileSize / 2;
@@ -667,15 +534,12 @@ class AutoDroneApp {
                     this.sound.playMove();
                     this.ui.logAction(action);
 
-                    // Move trail particles
                     this.particles.emitMoveTrail(canvasX, canvasY, action.direction);
 
-                    // Animate
                     const oldX = this.renderer.dronePos.x;
                     const oldY = this.renderer.dronePos.y;
                     this.renderer.animateMove(oldX, oldY, result.newPosition.x, result.newPosition.y);
 
-                    // Energy drain particle
                     if (this.gameState.drone.energy < 30) {
                         this.particles.emitEnergyDrain(canvasX, canvasY);
                     }
@@ -701,7 +565,6 @@ class AutoDroneApp {
                     this.sound.playCollect();
                     this.ui.log(`COLLECT: Got ${result.collected}!`, 'success');
 
-                    // Collect particles
                     const newCanvasX = this.gameState.drone.x * tileSize + tileSize / 2;
                     const newCanvasY = this.gameState.drone.y * tileSize + tileSize / 2;
                     this.particles.emitCollect(newCanvasX, newCanvasY,
@@ -721,9 +584,6 @@ class AutoDroneApp {
         }
     }
 
-    /**
-     * Pause execution
-     */
     pause() {
         if (this.vm) {
             this.vm.pause();
@@ -734,9 +594,6 @@ class AutoDroneApp {
         }
     }
 
-    /**
-     * Step execution
-     */
     step() {
         if (!this.vm || this.vm.state === VMState.HALTED || this.vm.state === VMState.ERROR) {
             this.resetLevel();
@@ -782,9 +639,6 @@ class AutoDroneApp {
         }
     }
 
-    /**
-     * Setup VM event handlers for step mode
-     */
     setupVMEventHandlers() {
         this.vm.on(EventType.LOG, (event) => {
             this.ui.log(String(event.data.message), 'info');
@@ -803,9 +657,6 @@ class AutoDroneApp {
         });
     }
 
-    /**
-     * Stop execution
-     */
     stop() {
         if (this.vm) {
             this.vm.stop();
@@ -816,9 +667,6 @@ class AutoDroneApp {
         this.ui.clearHighlight();
     }
 
-    /**
-     * Stop execution interval
-     */
     stopExecution() {
         if (this.executionInterval) {
             clearInterval(this.executionInterval);
@@ -826,9 +674,6 @@ class AutoDroneApp {
         }
     }
 
-    /**
-     * Rewind
-     */
     rewind() {
         if (this.vm && this.vm.rewind(5)) {
             this.ui.log('⏪ Rewound 5 steps', 'info');
@@ -837,29 +682,22 @@ class AutoDroneApp {
         }
     }
 
-    /**
-     * Execution complete
-     */
     onExecutionComplete() {
         this.stopExecution();
         this.ui.clearHighlight();
         this.ui.setControlState('halted');
 
-        // Run analysis
         const result = this.analysis.analyze(
             this.gameState,
             this.vm.eventLog,
             this.currentLevelData
         );
 
-        // Display analysis
         this.ui.displayAnalysis(result);
 
-        // Handle win/lose
         if (this.gameState.status === 'won') {
             this.sound.playLevelComplete();
 
-            // Confetti!
             const canvas = document.getElementById('game-canvas');
             this.particles.emitLevelComplete(
                 canvas.width / 2,
@@ -878,14 +716,12 @@ class AutoDroneApp {
             this.ui.markLevelCompleted(this.currentLevel);
             this.ui.logSuccess('✓ Semua objective tercapai!');
 
-            // Congratulate
             if (result.stars >= 4) {
                 this.ui.log('🌟 Luar biasa! Solusi yang sangat efisien!', 'success');
             } else if (result.stars >= 2) {
                 this.ui.log('👍 Bagus! Coba optimalkan untuk bintang lebih banyak.', 'info');
             }
 
-            // Record achievement
             this.achievements.recordLevelComplete(
                 this.currentLevel,
                 result.stars,
@@ -909,16 +745,11 @@ class AutoDroneApp {
         this.ui.log(`Skor: ${result.score}/100 (${result.stars} bintang)`, 'info');
     }
 
-    /**
-     * Render loop
-     */
     startRenderLoop() {
         const render = () => {
             if (this.gameState) {
-                // Update particles
                 this.particles.update();
 
-                // Render game + particles
                 this.renderer.render(this.gameState);
                 this.particles.draw(this.renderer.ctx);
             }
@@ -928,14 +759,9 @@ class AutoDroneApp {
     }
 }
 
-// ═══════════════════════════════════════════════════════════════
-// Application Entry Point
-// ═══════════════════════════════════════════════════════════════
-
 document.addEventListener('DOMContentLoaded', () => {
     const app = new AutoDroneApp();
     app.init();
 
-    // Expose for debugging
     window.AutoDrone = app;
 });
