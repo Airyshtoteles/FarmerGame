@@ -1,13 +1,3 @@
-/**
- * ═══════════════════════════════════════════════════════════════
- * AUTODRONE - POST-RUN ANALYSIS ENGINE
- * ═══════════════════════════════════════════════════════════════
- * Calculates efficiency scores and provides improvement suggestions.
- */
-
-/**
- * Analysis Result
- */
 export class AnalysisResult {
     constructor() {
         this.score = 0;
@@ -18,12 +8,8 @@ export class AnalysisResult {
     }
 }
 
-/**
- * Analysis Engine
- */
 export class AnalysisEngine {
     constructor() {
-        // Scoring weights
         this.weights = {
             energyEfficiency: 40,
             stepEfficiency: 30,
@@ -31,7 +17,6 @@ export class AnalysisEngine {
             completionBonus: 10
         };
 
-        // Known optimization patterns
         this.patterns = [
             {
                 check: (stats) => stats.turns > stats.moves * 0.5,
@@ -56,9 +41,6 @@ export class AnalysisEngine {
         ];
     }
 
-    /**
-     * Check for consecutive turn actions
-     */
     hasConsecutiveTurns(eventLog) {
         let lastWasTurn = false;
         for (const event of eventLog) {
@@ -72,19 +54,14 @@ export class AnalysisEngine {
         return false;
     }
 
-    /**
-     * Analyze a completed run
-     */
     analyze(gameState, eventLog, levelData) {
         const result = new AnalysisResult();
         const stats = gameState.stats;
 
-        // Get optimal values from level
         const optimalEnergy = levelData.optimalEnergy || stats.energyUsed;
         const optimalSteps = levelData.optimalSteps || stats.ticks;
         const timeLimit = levelData.timeLimit || 100;
 
-        // ═══ Calculate Metrics ═══
         result.metrics = {
             energyUsed: stats.energyUsed,
             energyOptimal: optimalEnergy,
@@ -105,9 +82,6 @@ export class AnalysisEngine {
             timeTaken: stats.ticks
         };
 
-        // ═══ Calculate Score Breakdown ═══
-
-        // Energy Efficiency (40 points max)
         const energyScore = Math.round(
             (optimalEnergy / Math.max(1, stats.energyUsed)) * this.weights.energyEfficiency
         );
@@ -117,7 +91,6 @@ export class AnalysisEngine {
             detail: `Used ${stats.energyUsed} energy (optimal: ${optimalEnergy})`
         };
 
-        // Step Efficiency (30 points max)
         const stepScore = Math.round(
             (optimalSteps / Math.max(1, stats.ticks)) * this.weights.stepEfficiency
         );
@@ -127,7 +100,6 @@ export class AnalysisEngine {
             detail: `Completed in ${stats.ticks} steps (optimal: ${optimalSteps})`
         };
 
-        // Time Bonus (20 points max, degrades over time)
         const timeScore = Math.max(0, this.weights.timeBonus - Math.floor(stats.ticks / 10));
         result.breakdown.time = {
             score: timeScore,
@@ -135,7 +107,6 @@ export class AnalysisEngine {
             detail: `Speed bonus: ${timeScore} points`
         };
 
-        // Completion Bonus (10 points)
         const completionScore = gameState.status === 'won' ? this.weights.completionBonus : 0;
         result.breakdown.completion = {
             score: completionScore,
@@ -143,7 +114,6 @@ export class AnalysisEngine {
             detail: gameState.status === 'won' ? 'Level completed!' : 'Level not completed'
         };
 
-        // ═══ Total Score ═══
         result.score = Math.round(
             result.breakdown.energy.score +
             result.breakdown.steps.score +
@@ -151,7 +121,6 @@ export class AnalysisEngine {
             result.breakdown.completion.score
         );
 
-        // ═══ Star Rating ═══
         if (result.score >= 90) result.stars = 5;
         else if (result.score >= 75) result.stars = 4;
         else if (result.score >= 60) result.stars = 3;
@@ -159,14 +128,12 @@ export class AnalysisEngine {
         else if (result.score >= 20) result.stars = 1;
         else result.stars = 0;
 
-        // ═══ Generate Suggestions ═══
         for (const pattern of this.patterns) {
             if (pattern.check(stats, eventLog)) {
                 result.suggestions.push(pattern.suggestion);
             }
         }
 
-        // Add completion-specific suggestions
         if (gameState.status !== 'won') {
             if (gameState.drone.energy <= 0) {
                 result.suggestions.unshift('💡 You ran out of energy. Try using WAIT to restore energy or find chargers.');
@@ -179,7 +146,6 @@ export class AnalysisEngine {
             }
         }
 
-        // Add positive feedback for good performance
         if (result.stars >= 4 && result.suggestions.length === 0) {
             result.suggestions.push('🌟 Excellent efficiency! Your solution is near-optimal.');
         }
@@ -191,9 +157,6 @@ export class AnalysisEngine {
         return result;
     }
 
-    /**
-     * Format analysis for display
-     */
     formatAnalysis(result) {
         const starIcons = '⭐'.repeat(result.stars) + '☆'.repeat(5 - result.stars);
 

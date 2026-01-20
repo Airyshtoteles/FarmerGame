@@ -1,32 +1,19 @@
-/**
- * ═══════════════════════════════════════════════════════════════
- * AUTODRONE - PARSER (AST Builder + Semantic Checker)
- * ═══════════════════════════════════════════════════════════════
- * Parses tokens into an Abstract Syntax Tree with semantic validation.
- */
-
 import { TokenType, Token } from './lexer.js';
 
-/**
- * AST Node Types
- */
 export const NodeType = {
     PROGRAM: 'Program',
     BLOCK: 'Block',
 
-    // Statements
     MOVE_STMT: 'MoveStatement',
     TURN_STMT: 'TurnStatement',
     COLLECT_STMT: 'CollectStatement',
     WAIT_STMT: 'WaitStatement',
     LOG_STMT: 'LogStatement',
 
-    // Control Flow
     IF_STMT: 'IfStatement',
     LOOP_STMT: 'LoopStatement',
     WHILE_STMT: 'WhileStatement',
 
-    // Expressions
     BINARY_EXPR: 'BinaryExpression',
     UNARY_EXPR: 'UnaryExpression',
     CALL_EXPR: 'CallExpression',
@@ -35,9 +22,6 @@ export const NodeType = {
     IDENTIFIER: 'Identifier'
 };
 
-/**
- * Parser Error with context
- */
 export class ParseError extends Error {
     constructor(message, token, hint = '') {
         super(message);
@@ -58,9 +42,6 @@ export class ParseError extends Error {
     }
 }
 
-/**
- * Semantic Error for logic issues
- */
 export class SemanticError extends Error {
     constructor(message, node, hint = '') {
         super(message);
@@ -81,9 +62,6 @@ export class SemanticError extends Error {
     }
 }
 
-/**
- * AST Node class
- */
 export class ASTNode {
     constructor(type, props = {}) {
         this.type = type;
@@ -93,9 +71,6 @@ export class ASTNode {
     }
 }
 
-/**
- * Parser class - Builds AST from tokens
- */
 export class Parser {
     constructor(tokens) {
         this.tokens = tokens;
@@ -103,37 +78,22 @@ export class Parser {
         this.warnings = [];
     }
 
-    /**
-     * Get current token
-     */
     current() {
         return this.tokens[this.pos] || new Token(TokenType.EOF, null, 0, 0);
     }
 
-    /**
-     * Peek ahead
-     */
     peek(offset = 1) {
         return this.tokens[this.pos + offset] || new Token(TokenType.EOF, null, 0, 0);
     }
 
-    /**
-     * Check if current token matches type
-     */
     check(type) {
         return this.current().type === type;
     }
 
-    /**
-     * Check multiple types
-     */
     checkAny(...types) {
         return types.includes(this.current().type);
     }
 
-    /**
-     * Consume token if matches, else throw
-     */
     expect(type, errorMsg) {
         if (!this.check(type)) {
             throw new ParseError(
@@ -144,27 +104,18 @@ export class Parser {
         return this.advance();
     }
 
-    /**
-     * Consume and return current token
-     */
     advance() {
         const token = this.current();
         this.pos++;
         return token;
     }
 
-    /**
-     * Skip newlines
-     */
     skipNewlines() {
         while (this.check(TokenType.NEWLINE)) {
             this.advance();
         }
     }
 
-    /**
-     * Consume optional newlines after statement
-     */
     consumeStatementEnd() {
         if (this.check(TokenType.NEWLINE)) {
             this.advance();
@@ -172,9 +123,6 @@ export class Parser {
         this.skipNewlines();
     }
 
-    /**
-     * Main parse method
-     */
     parse() {
         this.skipNewlines();
 
@@ -191,7 +139,6 @@ export class Parser {
             column: 1
         });
 
-        // Run semantic checks
         this.semanticCheck(program);
 
         return {
@@ -200,9 +147,6 @@ export class Parser {
         };
     }
 
-    /**
-     * Parse a single statement
-     */
     parseStatement() {
         const token = this.current();
 
@@ -238,11 +182,8 @@ export class Parser {
         }
     }
 
-    /**
-     * Parse MOVE statement
-     */
     parseMoveStatement() {
-        const token = this.advance(); // consume MOVE
+        const token = this.advance();
 
         if (!this.checkAny(TokenType.FORWARD, TokenType.BACK)) {
             throw new ParseError(
@@ -261,11 +202,8 @@ export class Parser {
         });
     }
 
-    /**
-     * Parse TURN statement
-     */
     parseTurnStatement() {
-        const token = this.advance(); // consume TURN
+        const token = this.advance();
 
         if (!this.checkAny(TokenType.LEFT, TokenType.RIGHT)) {
             throw new ParseError(
@@ -284,11 +222,8 @@ export class Parser {
         });
     }
 
-    /**
-     * Parse COLLECT statement
-     */
     parseCollectStatement() {
-        const token = this.advance(); // consume COLLECT
+        const token = this.advance();
 
         return new ASTNode(NodeType.COLLECT_STMT, {
             line: token.line,
@@ -296,11 +231,8 @@ export class Parser {
         });
     }
 
-    /**
-     * Parse WAIT statement
-     */
     parseWaitStatement() {
-        const token = this.advance(); // consume WAIT
+        const token = this.advance();
 
         let ticks = 1;
         if (this.check(TokenType.NUMBER)) {
@@ -314,11 +246,8 @@ export class Parser {
         });
     }
 
-    /**
-     * Parse LOG statement
-     */
     parseLogStatement() {
-        const token = this.advance(); // consume LOG
+        const token = this.advance();
 
         const expression = this.parseExpression();
 
@@ -329,11 +258,8 @@ export class Parser {
         });
     }
 
-    /**
-     * Parse IF statement
-     */
     parseIfStatement() {
-        const token = this.advance(); // consume IF
+        const token = this.advance();
 
         const condition = this.parseExpression();
 
@@ -344,11 +270,10 @@ export class Parser {
 
         let alternate = null;
 
-        // Check for ELIF or ELSE
         if (this.check(TokenType.ELIF)) {
-            alternate = this.parseIfStatement(); // Recursive for ELIF chain
+            alternate = this.parseIfStatement();
         } else if (this.check(TokenType.ELSE)) {
-            this.advance(); // consume ELSE
+            this.advance();
             this.expect(TokenType.COLON, 'Expected ":" after ELSE');
             this.consumeStatementEnd();
             alternate = this.parseBlock();
@@ -366,11 +291,8 @@ export class Parser {
         });
     }
 
-    /**
-     * Parse LOOP statement
-     */
     parseLoopStatement() {
-        const token = this.advance(); // consume LOOP
+        const token = this.advance();
 
         if (!this.check(TokenType.NUMBER)) {
             throw new ParseError(
@@ -413,11 +335,8 @@ export class Parser {
         });
     }
 
-    /**
-     * Parse WHILE statement
-     */
     parseWhileStatement() {
-        const token = this.advance(); // consume WHILE
+        const token = this.advance();
 
         const condition = this.parseExpression();
 
@@ -436,9 +355,6 @@ export class Parser {
         });
     }
 
-    /**
-     * Parse a block of statements until END/ELSE/ELIF
-     */
     parseBlock() {
         const statements = [];
 
@@ -452,16 +368,10 @@ export class Parser {
         });
     }
 
-    /**
-     * Parse expression (comparison level)
-     */
     parseExpression() {
         return this.parseOr();
     }
 
-    /**
-     * Parse OR expression
-     */
     parseOr() {
         let left = this.parseAnd();
 
@@ -480,9 +390,6 @@ export class Parser {
         return left;
     }
 
-    /**
-     * Parse AND expression
-     */
     parseAnd() {
         let left = this.parseComparison();
 
@@ -501,9 +408,6 @@ export class Parser {
         return left;
     }
 
-    /**
-     * Parse comparison expression
-     */
     parseComparison() {
         let left = this.parseAdditive();
 
@@ -541,9 +445,6 @@ export class Parser {
         return left;
     }
 
-    /**
-     * Parse additive expression
-     */
     parseAdditive() {
         let left = this.parseUnary();
 
@@ -562,9 +463,6 @@ export class Parser {
         return left;
     }
 
-    /**
-     * Parse unary expression
-     */
     parseUnary() {
         if (this.check(TokenType.NOT)) {
             const op = this.advance();
@@ -580,15 +478,12 @@ export class Parser {
         return this.parseCall();
     }
 
-    /**
-     * Parse call expression (function calls)
-     */
     parseCall() {
         let expr = this.parsePrimary();
 
         while (true) {
             if (this.check(TokenType.LPAREN)) {
-                this.advance(); // consume (
+                this.advance();
 
                 const args = [];
 
@@ -607,7 +502,7 @@ export class Parser {
                     column: expr.column
                 });
             } else if (this.check(TokenType.DOT)) {
-                this.advance(); // consume .
+                this.advance();
 
                 if (!this.check(TokenType.IDENTIFIER)) {
                     throw new ParseError(
@@ -632,13 +527,9 @@ export class Parser {
         return expr;
     }
 
-    /**
-     * Parse primary expression
-     */
     parsePrimary() {
         const token = this.current();
 
-        // Number literal
         if (this.check(TokenType.NUMBER)) {
             this.advance();
             return new ASTNode(NodeType.LITERAL, {
@@ -649,7 +540,6 @@ export class Parser {
             });
         }
 
-        // String literal
         if (this.check(TokenType.STRING)) {
             this.advance();
             return new ASTNode(NodeType.LITERAL, {
@@ -660,7 +550,6 @@ export class Parser {
             });
         }
 
-        // Direction keywords as string values
         if (this.checkAny(TokenType.FORWARD, TokenType.BACK, TokenType.LEFT, TokenType.RIGHT)) {
             this.advance();
             return new ASTNode(NodeType.LITERAL, {
@@ -671,7 +560,6 @@ export class Parser {
             });
         }
 
-        // Identifier (variable or function name)
         if (this.check(TokenType.IDENTIFIER)) {
             this.advance();
             return new ASTNode(NodeType.IDENTIFIER, {
@@ -681,9 +569,8 @@ export class Parser {
             });
         }
 
-        // Parenthesized expression
         if (this.check(TokenType.LPAREN)) {
-            this.advance(); // consume (
+            this.advance();
             const expr = this.parseExpression();
             this.expect(TokenType.RPAREN, 'Expected ")" to close expression');
             return expr;
@@ -696,23 +583,15 @@ export class Parser {
         );
     }
 
-    /**
-     * Semantic Analysis
-     */
     semanticCheck(program) {
-        // Check for potential issues
         this.checkUnreachableCode(program.body);
         this.checkVariableUsage(program.body);
     }
 
-    /**
-     * Check for unreachable code after infinite loops
-     */
     checkUnreachableCode(statements) {
         for (let i = 0; i < statements.length; i++) {
             const stmt = statements[i];
 
-            // Check if it's a WHILE true with no break
             if (stmt.type === NodeType.WHILE_STMT) {
                 if (this.isAlwaysTrue(stmt.condition)) {
                     if (i < statements.length - 1) {
@@ -725,7 +604,6 @@ export class Parser {
                 }
             }
 
-            // Recursively check nested blocks
             if (stmt.body?.statements) {
                 this.checkUnreachableCode(stmt.body.statements);
             }
@@ -738,9 +616,6 @@ export class Parser {
         }
     }
 
-    /**
-     * Check if condition is always true
-     */
     isAlwaysTrue(condition) {
         if (condition.type === NodeType.LITERAL && condition.value === true) {
             return true;
@@ -752,9 +627,6 @@ export class Parser {
         return false;
     }
 
-    /**
-     * Check for undefined variable usage
-     */
     checkVariableUsage(statements) {
         const validVariables = new Set([
             'energy', 'x', 'y', 'facing', 'inventory',
@@ -775,7 +647,6 @@ export class Parser {
                 }
             }
 
-            // Recursively check children
             if (node.condition) checkNode(node.condition);
             if (node.left) checkNode(node.left);
             if (node.right) checkNode(node.right);

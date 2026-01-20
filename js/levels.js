@@ -1,14 +1,5 @@
-/**
- * ═══════════════════════════════════════════════════════════════
- * AUTODRONE - 10 PROGRESSIVE LEVELS
- * ═══════════════════════════════════════════════════════════════
- * Each level teaches a specific programming concept.
- * Difficulty increases gradually with new mechanics introduced.
- */
-
 import { TileType } from './game.js';
 
-// Shorthand for readability
 const E = TileType.EMPTY;
 const W = TileType.WALL;
 const C = TileType.CRYSTAL;
@@ -17,12 +8,6 @@ const B = TileType.ENERGY_CELL;
 const H = TileType.HAZARD;
 const G = TileType.CHARGER;
 
-/**
- * ═══════════════════════════════════════════════════════════════
- * LEVEL 1: Hello Drone
- * Teaches: Basic MOVE and COLLECT commands
- * ═══════════════════════════════════════════════════════════════
- */
 export const Level1 = {
     id: 'level_1',
     name: '1. Hello Drone',
@@ -71,20 +56,11 @@ export const Level1 = {
         '💡 Tekan F5 atau klik Run untuk menjalankan'
     ],
 
-    sampleSolution: `# Level 1: Hello Drone
-# Maju ke crystal dan ambil
-
-MOVE forward
+    sampleSolution: `MOVE forward
 MOVE forward
 COLLECT`
 };
 
-/**
- * ═══════════════════════════════════════════════════════════════
- * LEVEL 2: Turn Around
- * Teaches: TURN command for direction changes
- * ═══════════════════════════════════════════════════════════════
- */
 export const Level2 = {
     id: 'level_2',
     name: '2. Turn Around',
@@ -125,10 +101,7 @@ export const Level2 = {
         '💡 Ikuti jalur berbentuk L'
     ],
 
-    sampleSolution: `# Level 2: Turn Around
-# Ikuti jalur L
-
-MOVE forward
+    sampleSolution: `MOVE forward
 MOVE forward
 TURN right
 MOVE forward
@@ -138,12 +111,6 @@ MOVE forward
 COLLECT`
 };
 
-/**
- * ═══════════════════════════════════════════════════════════════
- * LEVEL 3: Loop Basics
- * Teaches: LOOP for repetition
- * ═══════════════════════════════════════════════════════════════
- */
 export const Level3 = {
     id: 'level_3',
     name: '3. Loop Basics',
@@ -182,21 +149,12 @@ export const Level3 = {
         '⚠️ Jangan lupa END di akhir LOOP'
     ],
 
-    sampleSolution: `# Level 3: Loop Basics
-# Gunakan LOOP untuk menghemat kode
-
-LOOP 3:
+    sampleSolution: `LOOP 3:
     MOVE forward
     COLLECT
 END`
 };
 
-/**
- * ═══════════════════════════════════════════════════════════════
- * LEVEL 4: Sensing the World
- * Teaches: scan() function
- * ═══════════════════════════════════════════════════════════════
- */
 export const Level4 = {
     id: 'level_4',
     name: '4. Sensing the World',
@@ -236,10 +194,7 @@ export const Level4 = {
         '💡 Coba: log scan() lalu MOVE forward'
     ],
 
-    sampleSolution: `# Level 4: Sensing
-# Log hasil scan untuk debug
-
-log scan()
+    sampleSolution: `log scan()
 MOVE forward
 COLLECT
 log scan()
@@ -251,12 +206,6 @@ MOVE forward
 COLLECT`
 };
 
-/**
- * ═══════════════════════════════════════════════════════════════
- * LEVEL 5: Conditional Logic
- * Teaches: IF statements
- * ═══════════════════════════════════════════════════════════════
- */
 export const Level5 = {
     id: 'level_5',
     name: '5. Conditional Logic',
@@ -296,10 +245,7 @@ export const Level5 = {
         '💡 Mencegah error "nothing to collect"'
     ],
 
-    sampleSolution: `# Level 5: Conditional Logic
-# Cek dulu sebelum collect
-
-LOOP 4:
+    sampleSolution: `LOOP 4:
     IF scan() == "crystal":
         MOVE forward
         COLLECT
@@ -319,12 +265,6 @@ LOOP 3:
 END`
 };
 
-/**
- * ═══════════════════════════════════════════════════════════════
- * LEVEL 6: Wall Avoidance
- * Teaches: Combining IF with scan() for navigation
- * ═══════════════════════════════════════════════════════════════
- */
 export const Level6 = {
     id: 'level_6',
     name: '6. Wall Avoidance',
@@ -365,10 +305,7 @@ export const Level6 = {
         '💡 Drone tidak akan nabrak!'
     ],
 
-    sampleSolution: `# Level 6: Wall Avoidance
-# Smart navigation
-
-LOOP 15:
+    sampleSolution: `LOOP 15:
     IF scan() == "wall":
         TURN right
     ELIF scan() == "crystal":
@@ -380,12 +317,6 @@ LOOP 15:
 END`
 };
 
-/**
- * ═══════════════════════════════════════════════════════════════
- * LEVEL 7: Energy Management
- * Teaches: Energy variable and WAIT
- * ═══════════════════════════════════════════════════════════════
- */
 export const Level7 = {
     id: 'level_7',
     name: '7. Energy Management',
@@ -405,7 +336,7 @@ export const Level7 = {
     startX: 1,
     startY: 1,
     startFacing: 'east',
-    startEnergy: 30, // Limited energy!
+    startEnergy: 30,
     maxEnergy: 100,
 
     fogOfWar: false,
@@ -425,19 +356,14 @@ export const Level7 = {
         '💡 WAIT memulihkan 1 energy, tapi lambat'
     ],
 
-    sampleSolution: `# Level 7: Energy Management
-# Pergi ke charger dulu!
-
+    sampleSolution: `MOVE forward
 MOVE forward
-MOVE forward
-# Sekarang di charger, energy +20
 
 MOVE forward
 MOVE forward
 MOVE forward
 COLLECT
 
-# Balik untuk crystal kedua
 TURN right
 TURN right
 MOVE forward
@@ -449,12 +375,6 @@ MOVE forward
 COLLECT`
 };
 
-/**
- * ═══════════════════════════════════════════════════════════════
- * LEVEL 8: WHILE Loops
- * Teaches: WHILE for conditional repetition
- * ═══════════════════════════════════════════════════════════════
- */
 export const Level8 = {
     id: 'level_8',
     name: '8. WHILE Loops',
@@ -495,10 +415,7 @@ export const Level8 = {
         '💡 Gunakan WHILE inventory.crystal < 6 untuk loop sampai cukup'
     ],
 
-    sampleSolution: `# Level 8: WHILE Loops
-# Loop sampai semua crystal terkumpul
-
-WHILE inventory.crystal < 6:
+    sampleSolution: `WHILE inventory.crystal < 6:
     IF scan() == "crystal":
         MOVE forward
         COLLECT
@@ -512,12 +429,6 @@ END
 log "Semua crystal terkumpul!"`
 };
 
-/**
- * ═══════════════════════════════════════════════════════════════
- * LEVEL 9: Fog of War
- * Teaches: Limited visibility and exploration
- * ═══════════════════════════════════════════════════════════════
- */
 export const Level9 = {
     id: 'level_9',
     name: '9. Fog of War',
@@ -542,8 +453,8 @@ export const Level9 = {
     startEnergy: 80,
     maxEnergy: 100,
 
-    fogOfWar: true, // FOG ENABLED!
-    scanRadius: 1,  // Very limited!
+    fogOfWar: true,
+    scanRadius: 1,
 
     objectives: [
         { type: 'collect', resource: 'crystal', count: 3 }
@@ -559,11 +470,7 @@ export const Level9 = {
         '💡 Jalan perlahan dan scan sebelum bergerak'
     ],
 
-    sampleSolution: `# Level 9: Fog of War
-# Eksplorasi dengan hati-hati
-
-WHILE inventory.crystal < 3:
-    # Scan dulu
+    sampleSolution: `WHILE inventory.crystal < 3:
     log scan()
     
     IF scan() == "crystal":
@@ -575,7 +482,6 @@ WHILE inventory.crystal < 3:
         MOVE forward
     END
     
-    # Cek energy
     IF energy < 20:
         log "Energy rendah!"
         WAIT 5
@@ -583,12 +489,6 @@ WHILE inventory.crystal < 3:
 END`
 };
 
-/**
- * ═══════════════════════════════════════════════════════════════
- * LEVEL 10: Master Challenge
- * Teaches: Combining all concepts
- * ═══════════════════════════════════════════════════════════════
- */
 export const Level10 = {
     id: 'level_10',
     name: '10. Master Challenge',
@@ -634,11 +534,7 @@ export const Level10 = {
         '💎 Kumpulkan 3 crystal DAN 2 data core'
     ],
 
-    sampleSolution: `# Level 10: Master Challenge
-# Gabungkan semua konsep!
-
-WHILE inventory.crystal < 3 or inventory.data < 2:
-    # Scan dan decide
+    sampleSolution: `WHILE inventory.crystal < 3 or inventory.data < 2:
     IF scan() == "hazard":
         TURN right
         log "Hazard detected!"
@@ -659,7 +555,6 @@ WHILE inventory.crystal < 3 or inventory.data < 2:
         MOVE forward
     END
     
-    # Energy check
     IF energy < 15:
         WAIT 10
     END
@@ -668,31 +563,19 @@ END
 log "🏆 LEVEL COMPLETE!"`
 };
 
-/**
- * All levels exported as array
- */
 export const Levels = [
     Level1, Level2, Level3, Level4, Level5,
     Level6, Level7, Level8, Level9, Level10
 ];
 
-/**
- * Get level by ID
- */
 export function getLevelById(id) {
     return Levels.find(level => level.id === id);
 }
 
-/**
- * Get level by index (1-based)
- */
 export function getLevelByNumber(num) {
     return Levels[num - 1];
 }
 
-/**
- * Level progression info
- */
 export const LevelProgression = [
     { level: 1, concept: 'MOVE & COLLECT', icon: '🚀' },
     { level: 2, concept: 'TURN', icon: '🔄' },

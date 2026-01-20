@@ -1,16 +1,5 @@
-/**
- * ═══════════════════════════════════════════════════════════════
- * AUTODRONE - CANVAS RENDERER
- * ═══════════════════════════════════════════════════════════════
- * Renders game state with fog of war, scan cone visualization,
- * smooth animations, and ghost preview.
- */
-
 import { TileType, Directions } from './game.js';
 
-/**
- * Tile Colors & Visuals
- */
 const TileVisuals = {
     [TileType.EMPTY]: { color: '#1a1a2e', emoji: '' },
     [TileType.WALL]: { color: '#2d2d44', emoji: '' },
@@ -21,9 +10,6 @@ const TileVisuals = {
     [TileType.CHARGER]: { color: '#1a3d1a', emoji: '⚡' }
 };
 
-/**
- * Drone direction arrows
- */
 const DroneArrows = {
     north: '↑',
     east: '→',
@@ -31,15 +17,11 @@ const DroneArrows = {
     west: '←'
 };
 
-/**
- * Renderer class
- */
 export class Renderer {
     constructor(canvas, options = {}) {
         this.canvas = canvas;
         this.ctx = canvas.getContext('2d');
 
-        // Options
         this.options = {
             cellSize: options.cellSize || 48,
             padding: options.padding || 2,
@@ -49,21 +31,17 @@ export class Renderer {
             ...options
         };
 
-        // Animation state
         this.animating = false;
         this.animationQueue = [];
         this.dronePos = { x: 0, y: 0 };
         this.droneFacing = 'north';
 
-        // Scan cone visualization
         this.scanConeActive = false;
         this.scanConeDirection = 'forward';
         this.scanConeTimer = null;
 
-        // Ghost preview
         this.ghostPos = null;
 
-        // Colors
         this.colors = {
             background: '#0a0a0f',
             grid: 'rgba(0, 240, 255, 0.05)',
@@ -77,9 +55,6 @@ export class Renderer {
         };
     }
 
-    /**
-     * Initialize canvas size based on grid
-     */
     initCanvas(width, height) {
         const totalWidth = width * this.options.cellSize;
         const totalHeight = height * this.options.cellSize;
@@ -87,7 +62,6 @@ export class Renderer {
         this.canvas.width = totalWidth;
         this.canvas.height = totalHeight;
 
-        // Set up high DPI
         const dpr = window.devicePixelRatio || 1;
         this.canvas.width = totalWidth * dpr;
         this.canvas.height = totalHeight * dpr;
@@ -99,51 +73,37 @@ export class Renderer {
         this.gridHeight = height;
     }
 
-    /**
-     * Main render method
-     */
     render(gameState) {
         const ctx = this.ctx;
         const cellSize = this.options.cellSize;
 
-        // Clear canvas
         ctx.fillStyle = this.colors.background;
         ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-        // Update drone position for animation
         if (!this.animating) {
             this.dronePos = { x: gameState.drone.x, y: gameState.drone.y };
             this.droneFacing = gameState.drone.facing;
         }
 
-        // Draw grid
         this.drawGrid(gameState);
 
-        // Draw tiles
         this.drawTiles(gameState);
 
-        // Draw scan cone if active
         if (this.scanConeActive) {
             this.drawScanCone(gameState);
         }
 
-        // Draw ghost preview
         if (this.ghostPos) {
             this.drawGhost();
         }
 
-        // Draw drone
         this.drawDrone();
 
-        // Draw fog of war
         if (gameState.fogEnabled) {
             this.drawFog(gameState);
         }
     }
 
-    /**
-     * Draw grid lines
-     */
     drawGrid(gameState) {
         if (!this.options.showGrid) return;
 
@@ -153,7 +113,6 @@ export class Renderer {
         ctx.strokeStyle = this.colors.grid;
         ctx.lineWidth = 1;
 
-        // Vertical lines
         for (let x = 0; x <= this.gridWidth; x++) {
             ctx.beginPath();
             ctx.moveTo(x * cellSize, 0);
@@ -161,7 +120,6 @@ export class Renderer {
             ctx.stroke();
         }
 
-        // Horizontal lines
         for (let y = 0; y <= this.gridHeight; y++) {
             ctx.beginPath();
             ctx.moveTo(0, y * cellSize);
@@ -170,9 +128,6 @@ export class Renderer {
         }
     }
 
-    /**
-     * Draw all tiles
-     */
     drawTiles(gameState) {
         const ctx = this.ctx;
         const cellSize = this.options.cellSize;
@@ -183,7 +138,6 @@ export class Renderer {
                 const tile = gameState.getTile(x, y);
                 const visual = TileVisuals[tile] || TileVisuals[TileType.EMPTY];
 
-                // Draw tile background
                 ctx.fillStyle = visual.color;
                 ctx.fillRect(
                     x * cellSize + padding,
@@ -192,10 +146,8 @@ export class Renderer {
                     cellSize - padding * 2
                 );
 
-                // Draw wall pattern
                 if (tile === TileType.WALL) {
                     ctx.fillStyle = '#3a3a5a';
-                    // Draw brick pattern
                     for (let by = 0; by < 3; by++) {
                         for (let bx = 0; bx < 3; bx++) {
                             const offset = by % 2 === 0 ? 0 : cellSize / 6;
@@ -209,7 +161,6 @@ export class Renderer {
                     }
                 }
 
-                // Draw emoji
                 if (visual.emoji) {
                     ctx.font = `${cellSize * 0.5}px Arial`;
                     ctx.textAlign = 'center';
@@ -221,7 +172,6 @@ export class Renderer {
                     );
                 }
 
-                // Highlight drone's current tile
                 if (x === Math.round(this.dronePos.x) && y === Math.round(this.dronePos.y)) {
                     ctx.strokeStyle = this.colors.highlight;
                     ctx.lineWidth = 2;
@@ -236,9 +186,6 @@ export class Renderer {
         }
     }
 
-    /**
-     * Draw the drone
-     */
     drawDrone() {
         const ctx = this.ctx;
         const cellSize = this.options.cellSize;
@@ -249,7 +196,6 @@ export class Renderer {
         const centerY = y * cellSize + cellSize / 2;
         const radius = cellSize * 0.35;
 
-        // Glow effect
         const gradient = ctx.createRadialGradient(
             centerX, centerY, radius * 0.5,
             centerX, centerY, radius * 2
@@ -261,13 +207,11 @@ export class Renderer {
         ctx.arc(centerX, centerY, radius * 2, 0, Math.PI * 2);
         ctx.fill();
 
-        // Drone body
         ctx.fillStyle = this.colors.drone;
         ctx.beginPath();
         ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
         ctx.fill();
 
-        // Direction indicator
         ctx.fillStyle = '#0a0a0f';
         ctx.font = `bold ${cellSize * 0.4}px Arial`;
         ctx.textAlign = 'center';
@@ -275,9 +219,6 @@ export class Renderer {
         ctx.fillText(DroneArrows[this.droneFacing], centerX, centerY);
     }
 
-    /**
-     * Draw fog of war
-     */
     drawFog(gameState) {
         const ctx = this.ctx;
         const cellSize = this.options.cellSize;
@@ -288,7 +229,6 @@ export class Renderer {
                     ctx.fillStyle = this.colors.fog;
                     ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
 
-                    // Add fog pattern
                     ctx.fillStyle = 'rgba(30, 30, 50, 0.5)';
                     ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
                 }
@@ -296,9 +236,6 @@ export class Renderer {
         }
     }
 
-    /**
-     * Draw scan cone visualization
-     */
     drawScanCone(gameState) {
         const ctx = this.ctx;
         const cellSize = this.options.cellSize;
@@ -308,7 +245,6 @@ export class Renderer {
         const centerX = x * cellSize + cellSize / 2;
         const centerY = y * cellSize + cellSize / 2;
 
-        // Get scan direction
         let facing = gameState.drone.facing;
         if (this.scanConeDirection === 'left') {
             facing = { north: 'west', west: 'south', south: 'east', east: 'north' }[facing];
@@ -318,13 +254,12 @@ export class Renderer {
 
         const vec = Directions[facing];
 
-        // Draw cone
         ctx.fillStyle = this.colors.scanCone;
         ctx.beginPath();
         ctx.moveTo(centerX, centerY);
 
         const coneLength = cellSize * 3;
-        const coneWidth = Math.PI / 4; // 45 degree spread
+        const coneWidth = Math.PI / 4;
 
         const angle = Math.atan2(vec.dy, vec.dx);
 
@@ -332,7 +267,6 @@ export class Renderer {
         ctx.closePath();
         ctx.fill();
 
-        // Highlight scanned tile
         const targetX = x + vec.dx;
         const targetY = y + vec.dy;
 
@@ -348,9 +282,6 @@ export class Renderer {
         }
     }
 
-    /**
-     * Draw ghost preview
-     */
     drawGhost() {
         if (!this.ghostPos) return;
 
@@ -363,13 +294,11 @@ export class Renderer {
         const centerY = y * cellSize + cellSize / 2;
         const radius = cellSize * 0.3;
 
-        // Draw semi-transparent drone
         ctx.fillStyle = this.colors.ghost;
         ctx.beginPath();
         ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
         ctx.fill();
 
-        // Dashed outline
         ctx.strokeStyle = this.colors.drone;
         ctx.setLineDash([5, 5]);
         ctx.lineWidth = 2;
@@ -377,9 +306,6 @@ export class Renderer {
         ctx.setLineDash([]);
     }
 
-    /**
-     * Animate drone movement
-     */
     animateMove(fromX, fromY, toX, toY, callback) {
         this.animating = true;
         const startTime = performance.now();
@@ -389,7 +315,6 @@ export class Renderer {
             const elapsed = currentTime - startTime;
             const progress = Math.min(1, elapsed / duration);
 
-            // Ease out cubic
             const eased = 1 - Math.pow(1 - progress, 3);
 
             this.dronePos.x = fromX + (toX - fromX) * eased;
@@ -408,18 +333,11 @@ export class Renderer {
         requestAnimationFrame(animate);
     }
 
-    /**
-     * Animate drone turn
-     */
     animateTurn(newFacing, callback) {
-        // Simple instant turn for now
         this.droneFacing = newFacing;
         if (callback) setTimeout(callback, 50);
     }
 
-    /**
-     * Show scan cone temporarily
-     */
     showScanCone(direction = 'forward', duration = 500) {
         this.scanConeActive = true;
         this.scanConeDirection = direction;
@@ -434,16 +352,10 @@ export class Renderer {
         }, duration);
     }
 
-    /**
-     * Set ghost preview position
-     */
     setGhostPreview(x, y) {
         this.ghostPos = { x, y };
     }
 
-    /**
-     * Clear ghost preview
-     */
     clearGhostPreview() {
         this.ghostPos = null;
     }
