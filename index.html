@@ -84,11 +84,7 @@
                     </div>
                 </div>
                 <div class="editor-container">
-                    <div class="line-numbers" id="line-numbers"></div>
-                    <textarea id="code-editor" spellcheck="false" placeholder="# Tulis script automation kamu di sini!
-# Contoh:
-MOVE forward
-COLLECT"></textarea>
+                    <div id="blocklyDiv" style="height: 100%; width: 100%;"></div>
                 </div>
                 <div class="editor-status">
                     <span id="cursor-position">Ln 1, Col 1</span>
@@ -130,7 +126,8 @@ COLLECT"></textarea>
             </section>
 
             <!-- Right Panel: Console & Tabs -->
-            <section class="panel console-panel">
+            <section class="panel console-panel" id="console-panel">
+                <button id="btn-toggle-info" class="floating-btn">☰ Info / Menu</button>
                 <div class="panel-tabs">
                     <button class="tab-btn active" data-tab="console">📟 Console</button>
                     <button class="tab-btn" data-tab="lesson">📚 Pelajaran</button>
